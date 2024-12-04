@@ -1,5 +1,4 @@
 import os
-from os import path
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
@@ -10,7 +9,7 @@ from conan.tools.build import check_min_cppstd
 from conan.tools.microsoft import check_min_vs, is_msvc, is_msvc_static_runtime
 from conan.tools.scm import Version
 
-required_conan_version = ">=1.55.0"
+required_conan_version = ">=2.7.0"
 
 
 class ScriptaConan(ConanFile):
@@ -24,6 +23,7 @@ class ScriptaConan(ConanFile):
     exports = "LICENSE*"
     settings = "os", "compiler", "build_type", "arch"
     no_copy_source = True
+    package_type = "header-library"
 
     options = {
         "enable_testing": [True, False],
@@ -50,7 +50,7 @@ class ScriptaConan(ConanFile):
 
     def export_sources(self):
         copy(self, "CMakeLists.txt", self.recipe_folder, self.export_sources_folder)
-        copy(self, "*", path.join(self.recipe_folder, "include"), path.join(self.export_sources_folder, "include"))
+        copy(self, "*", os.path.join(self.recipe_folder, "include"), os.path.join(self.export_sources_folder, "include"))
 
     def layout(self):
         cmake_layout(self)
@@ -61,7 +61,6 @@ class ScriptaConan(ConanFile):
     def validate(self):
         if self.settings.compiler.cppstd:
             check_min_cppstd(self, self._min_cppstd)
-        check_min_vs(self, 192)  # TODO: remove in Conan 2.0
         if not is_msvc(self):
             minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
             if minimum_version and Version(self.settings.compiler.version) < minimum_version:
@@ -70,7 +69,7 @@ class ScriptaConan(ConanFile):
                 )
 
     def build_requirements(self):
-        self.test_requires("standardprojectsettings/[>=0.1.0]@ultimaker/stable")
+        self.test_requires("standardprojectsettings/[>=0.2.0]@ultimaker/stable")
 
     def generate(self):
         tc = CMakeToolchain(self)
